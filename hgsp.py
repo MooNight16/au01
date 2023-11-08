@@ -1,6 +1,6 @@
 """
 @Qim出品 仅供学习交流，请在下载后的24小时内完全删除 请勿将任何内容用于商业或非法目的，否则后果自负。
-火锅视频_V0.1   现金毛
+火锅视频_V0.11   现金毛
 入口 http://www.huoguo.video/h5/reg.html?invite_code=JFZJ6E
 直接填入账号密码
 export HG_phone=账号@密码
@@ -10,7 +10,7 @@ cron： 0 0 1,14 * * ?
 import time
 
 # from dotenv import load_dotenv
-#
+# 
 # load_dotenv()
 import os
 import requests
@@ -69,40 +69,39 @@ else:
                 time.sleep(5)
                 url = "http://www.huoguo.video/api/v2/hgb/recive"
                 response = requests.get(url, headers=headers).json()
-                message = response['message']
-                if message == "火锅币 +80.00":
-                    print(f"第{i + 1}次执行---{message}")
-                else:
-                    print(f"{response}")
+                if response['message']=='今日已完成':
+                    url = "http://www.huoguo.video/api/v2/hgb/detail"
+                    response = requests.get(url, headers=headers).json()
+                    coin = response['coin']
+                    today_coin = response['today_coin']
+                    print(f"今日获得火锅币:{today_coin},当前总火锅币:{coin}")
+                    print(f"{'-' * 25}")
+                    url = "http://www.huoguo.video/api/v2/hgb/exchange-savings"
+                    data = {
+                        'count': coin
+                    }
+                    response = requests.post(url, headers=headers, data=data).json()
+                    if "amount" in response:
+                        print(f'获得储蓄金{response["amount"]}')
+                    else:
+                        print(f"{response['message']}")
+                    url = "http://www.huoguo.video/api/v2/hgb/piggy"
+                    response = requests.get(url, headers=headers).json()
+                    saving = response['saving']
+                    balance = response['balance']
+                    print(f"当前总储蓄金:{saving} 可提现余额为：{balance}")
+                    print(f"{'-' * 15}开始提现{'-' * 15}")
+                    balance_float = float(balance)
+                    amount = "{:.2f}".format(balance_float)
+                    url = "http://www.huoguo.video/api/v2/wallet/withdraw"
+                    data = {
+                        'amount': amount
+                    }
+                    response = requests.post(url, headers=headers, data=data).json()
+                    print(response)
                     break
-            url = "http://www.huoguo.video/api/v2/hgb/detail"
-            response = requests.get(url, headers=headers).json()
-            coin = response['coin']
-            today_coin = response['today_coin']
-            print(f"今日获得火锅币:{today_coin},当前总火锅币:{coin}")
-            print(f"{'-' * 25}")
-            url = "http://www.huoguo.video/api/v2/hgb/exchange-savings"
-            data = {
-                'count': coin
-            }
-            response = requests.post(url, headers=headers,data=data).json()
-            if "amount" in response:
-                print(f'获得储蓄金{response["amount"]}')
-            else:
-                print(f"{response['message']}")
-            url = "http://www.huoguo.video/api/v2/hgb/piggy"
-            response = requests.get(url, headers=headers).json()
-            saving = response['saving']
-            balance = response['balance']
-            print(f"当前总储蓄金:{saving} 可提现余额为：{balance}")
-            print(f"{'-' * 15}开始提现{'-' * 15}")
-            balance_float = float(balance)
-            amount = "{:.2f}".format(balance_float)
-            url = "http://www.huoguo.video/api/v2/wallet/withdraw"
-            data = {
-                'amount': amount
-            }
-            response = requests.post(url, headers=headers,data=data).json()
-            print(response)
+                else:
+                    message = response['message']
+                    print(f"第{i + 1}次执行---{message}")
         else:
             print(f"{response['message']}")
